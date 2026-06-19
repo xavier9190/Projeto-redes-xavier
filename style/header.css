@@ -1,0 +1,23 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ff5722;
+  padding: 2.5rem;
+}
+
+.osi-img {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 3.75rem;
+}
+
+.title {
+  color: #FFF;
+  font-size: 3.5rem;
+}
+
+.user {
+  color: #FFF;
+  font-size: 1.2rem;
+}
