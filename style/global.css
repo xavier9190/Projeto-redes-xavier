@@ -1,13 +1,26 @@
 html {
-  font-family: "Roboto", sans-serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 400;
   font-style: normal;
+  background-color: #07101f;
+  color: #e3e0b3;
 }
 
-iframe {
-  color: #079ea6;
-  color: #1e0c42;
-  color: #f0077b;
-  color: #f5be58;
-  color: #e3e0b3;
+body {
+  overflow-x: hidden;
+  background-color: #07101f;
+  min-height: 100vh;
+}
+
+:root {
+  --primary:      #00c896;   /* verde-esmeralda */
+  --primary-dark: #009e77;
+  --accent:       #7c3aed;   /* violeta */
+  --accent-dark:  #5b21b6;
+  --bg-dark:      #07101f;   /* azul-marinho profundo */
+  --bg-card:      #0d1b2e;
+  --bg-input:     #0a1625;
+  --text-main:    #e3e0b3;
+  --text-dim:     #8fa0b3;
+  --yellow:       #f5be58;
 }

@@ -1,0 +1,240 @@
+/* ============================================================
+   RESULTADO.CSS — Página de resultado no estilo flat do João
+   Paleta: verde-esmeralda + azul-marinho + violeta
+   ============================================================ */
+
+.resultado-main {
+  padding: 2rem;
+  background-color: var(--bg-dark);
+  min-height: calc(100vh - 80px);
+}
+
+.resultado-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  color: var(--text-main);
+}
+
+/* Título principal */
+.resultado-wrapper h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.75rem;
+  color: var(--primary);
+  font-family: 'Audiowide', cursive;
+}
+
+/* Sub-títulos de seção */
+.resultado-wrapper h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  color: var(--yellow);
+  margin-top: 1.5rem;
+  font-weight: 600;
+}
+
+/* Badge de camada */
+.camada-label {
+  display: inline-block;
+  background-color: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 0.3rem;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Caixa de token / código */
+.token-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  overflow-x: hidden;
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: #7fffcb;
+  margin-bottom: 1rem;
+}
+
+/* Caixa de payload / dados */
+.payload-box {
+  background-color: var(--bg-card);
+  border: 1px solid rgba(0,200,150,0.35);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  overflow-x: hidden;
+  font-family: monospace;
+  font-size: 0.88rem;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+/* Canvas de rede */
+#networkCanvas {
+  background-color: var(--bg-card);
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  display: block;
+}
+
+/* Informações de rota textual */
+#rede-info {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,200,150,0.25);
+  border-radius: 0.4rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+#rede-info strong {
+  color: var(--primary);
+}
+
+/* Dados de resultado dinâmicos (dados-conteudo) */
+.dados-box {
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dados-box h3 {
+  font-family: 'Audiowide', cursive;
+  font-size: 0.95rem;
+  color: var(--yellow);
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0,200,150,0.2);
+  padding-bottom: 0.35rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dados-box h3:first-child {
+  margin-top: 0;
+}
+
+.dados-box p {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.6;
+  margin-bottom: 0.2rem;
+}
+
+.dados-box strong {
+  color: var(--primary);
+}
+
+/* Token JWT */
+.token-jwt {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #7fffcb;
+  background: var(--bg-card);
+  border: 1px solid rgba(0,200,150,0.4);
+  border-radius: 0.4rem;
+  padding: 0.75rem 1rem;
+  word-break: break-all;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+/* Preview bits/código */
+.bits-preview {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--yellow);
+  background: var(--bg-card);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.35rem;
+  display: block;
+  word-break: break-all;
+  margin-bottom: 0.5rem;
+}
+
+/* Bloco de rota info */
+.rota-info {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,200,150,0.3);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.rota-info h4 {
+  color: var(--primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+/* Details/summary */
+details summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-size: 0.85rem;
+}
+
+/* Botão voltar */
+.voltar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 0.75rem 1.75rem;
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.voltar-btn:hover {
+  background-color: var(--primary-dark);
+  box-shadow: none;
+}
+
+/* Container do resultado */
+.resultado-container {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.resultado-titulo {
+  font-family: 'Audiowide', cursive;
+  font-size: 1.6rem;
+  color: var(--primary);
+  margin-bottom: 0.4rem;
+}
+
+.resultado-subtitulo {
+  font-size: 0.95rem;
+  color: var(--yellow);
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+}

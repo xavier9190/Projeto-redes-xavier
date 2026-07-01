@@ -1,201 +1,220 @@
 /**
  * ARQUIVO: application.js
  * ---------------------------------------------------------
- * Este arquivo concentra as regras de negócio das camadas
- * superiores do Modelo OSI simuladas neste projeto:
- * - Camada de Aplicação (extração e validação de dados)
- * - Camada de Apresentação (geração de tokens JWT)
- * - Camada de Sessão (gerenciamento de portas lógicas)
+ * Concentra as regras de negócio da Camada de Aplicação (Camada 7).
+ *
+ * Responsabilidades:
+ * - Identificação do usuário (login via localStorage)
+ * - Detecção do protocolo com base no texto inserido
+ * - Exibição dinâmica dos formulários (email / chat / web)
+ * - Coleta dos dados e disparo para a Camada de Apresentação (Camada 6)
  */
 
-// Traz a biblioteca 'jose' por meio de CDN (skypack) para criar Token JWT.
-// Essa biblioteca é essencial para criptografar os dados da Camada de Apresentação.
-import * as jose from 'https://cdn.skypack.dev/jose';
+import { camadaApresentacao } from './apresentacao.js';
 
+// ─── Identificação do Usuário ─────────────────────────────────────────────────
+let USER_NAME = localStorage.getItem('osi-nome-usuario');
 
-
-// Nome principal que aparecerá na interface da aplicação
-const NOME_USUARIO = 'Pedro Xavier';
-
-
-
-// Seleciona o elemento HTML na tela onde o nome do usuário deve aparecer
-const elementoUsuario = document.querySelector('.user');
-
-// Verifica se o elemento existe na tela antes de tentar injetar o texto, evitando erros (null pointer)
-if (elementoUsuario) {
-  elementoUsuario.textContent = `Usuário: ${NOME_USUARIO}`;
+// Se não há nome salvo, pergunta e persiste (default: Pedro Xavier)
+if (!USER_NAME) {
+  const digitado = prompt('👤 Bem-vindo ao Sistema OSI!\n\nDigite o seu nome para continuar:');
+  USER_NAME = (digitado && digitado.trim()) ? digitado.trim() : 'Pedro Xavier';
+  localStorage.setItem('osi-nome-usuario', USER_NAME);
 }
 
+// Exibe o nome do usuário no cabeçalho
+const userElement = document.querySelector('#userNameDisplay');
+if (userElement) userElement.textContent = USER_NAME;
 
+// Também atualiza o .user caso exista na página
+const userElementLegacy = document.querySelector('.user');
+if (userElementLegacy) userElementLegacy.textContent = `Usuário: ${USER_NAME}`;
 
-// Senha confidencial utilizada para validar e assinar o Token JWT (algoritmo HS256).
-// No mundo real, esta chave jamais deve ficar exposta no código fonte do front-end.
-const SEGREDO_JWT = new TextEncoder().encode('segredo-osi-redes-2024');
-
-
-
-/**
- * FUNÇÃO: processarCamadaApresentacao
- * ---------------------------------------------------------
- * Representa a Camada de Apresentação (Camada 6 do OSI).
- * Aqui, os dados originais são formatados/criptografados em um Token JWT.
- * 
- * @param {Object} dadosAplicacao - O objeto contendo todos os dados já estruturados pela camada 7.
- * @returns {String} tokenGerado - O Token JWT criptografado em formato de string.
- */
-export async function processarCamadaApresentacao(dadosAplicacao) {
-
-  // Cria um Token JWT assinado utilizando a biblioteca 'jose'.
-  // O token embute as informações (payload) com segurança e garante integridade.
-  const tokenGerado = await new jose.SignJWT({ ...dadosAplicacao })
-    .setProtectedHeader({ alg: 'HS256' }) // Define o algoritmo de criptografia simétrica (HMAC + SHA-256)
-    .setIssuedAt()                        // Carimba o horário de criação do token
-    .setExpirationTime('2h')              // Define uma validade de 2 horas de duração para a segurança
-    .sign(SEGREDO_JWT);                   // Assina usando nossa chave privada (SEGREDO_JWT)
-
-
-
-  return tokenGerado;
+// Botão de logout / Trocar Usuário
+const btnLogout = document.querySelector('#btn-logout');
+if (btnLogout) {
+  btnLogout.addEventListener('click', () => {
+    localStorage.removeItem('osi-nome-usuario');
+    window.location.reload();
+  });
 }
 
+// ─── Elementos do DOM ─────────────────────────────────────────────────────────
+const reqInput        = document.querySelector('#text-input');
+const btnEnviar       = document.querySelector('.request-btn');
+const protocolDisplay = document.querySelector('.protocol-name');
 
+const emailForm     = document.querySelector('.email-form');
+const chatForm      = document.querySelector('.chat-form');
+const siteForm      = document.querySelector('.site-form');
+const siteHostInput = document.querySelector('#site-host');
+const inputFile     = document.querySelector('#arquivo');
 
-/**
- * FUNÇÃO: criarDadosAplicacao
- * ---------------------------------------------------------
- * Representa a Camada de Aplicação (Camada 7 do OSI).
- * Reconhece de forma autônoma a natureza do pedido baseado no texto ou arquivo inserido,
- * realizando uma validação primária antes de descer para a camada 6.
- */
-export function criarDadosAplicacao(textoEntrada, entradaArquivo, infoEmail) {
+// ─── Utilitários ──────────────────────────────────────────────────────────────
+function limparFormularios() {
+  if (emailForm) emailForm.classList.add('hidden');
+  if (chatForm)  chatForm.classList.add('hidden');
+  if (siteForm)  siteForm.classList.add('hidden');
+}
 
-  // Armazena o exato momento em que a requisição está sendo montada (Timestamp)
-  const marcaTempo = new Date().toISOString();
-  let dadosRetorno = {};
+// Ativa o botão visualmente quando há conteúdo no input
+if (reqInput) {
+  reqInput.addEventListener('input', () => {
+    if (btnEnviar) btnEnviar.classList.toggle('active', reqInput.value.length > 0);
+  });
+}
 
+// ─── Identificação do Protocolo ao clicar em EXECUTAR ─────────────────────────
+if (btnEnviar) {
+  btnEnviar.addEventListener('click', (event) => {
+    event.preventDefault();
 
+    const rawValue = reqInput ? reqInput.value.trim() : '';
+    const value    = rawValue.toLowerCase();
 
-  if (textoEntrada.includes('@')) {
+    if (value === '' && (!inputFile || !inputFile.files.length)) return;
 
-    // --- CENÁRIO 1: CORREIO ELETRÔNICO (E-MAIL) ---
-    // Condição: O texto precisa possuir o símbolo arroba ('@')
-    
-    // Regra de Validação: Além do '@', é obrigatório ter o sufixo '.com' para ser considerado válido.
-    if (!textoEntrada.includes('.com')) {
-      alert('Erro na Camada de Aplicação: O e-mail precisa conter "@" e ".com" (ex: teste@gmail.com).');
-      return null; // Interrompe o fluxo caso a validação falhe
+    limparFormularios();
+
+    let protocolo = '';
+
+    if (value.includes('@')) {
+      // E-mail detectado → SMTP
+      protocolo = '📧 SMTP / POP3';
+      if (emailForm) emailForm.classList.remove('hidden');
+
+    } else if (value.startsWith('ws://') || value.startsWith('wss://')) {
+      // WebSocket explícito
+      protocolo = '💬 WEBSOCKET';
+      if (chatForm) chatForm.classList.remove('hidden');
+
+    } else if (
+      value.startsWith('http') ||
+      value.includes('www')    ||
+      value.includes('.com')   ||
+      value.includes('.br')    ||
+      value.includes('.net')   ||
+      value.includes('.org')
+    ) {
+      // URL detectada → HTTP/HTTPS
+      protocolo = '🌐 HTTP / HTTPS';
+      if (siteForm) {
+        siteForm.classList.remove('hidden');
+        if (siteHostInput) siteHostInput.value = rawValue;
+      }
+
+    } else if (inputFile && inputFile.files.length > 0) {
+      // Arquivo selecionado → FTP/HTTP
+      protocolo = '📁 FTP / HTTP';
+
+    } else {
+      // Texto simples → WebSocket (chat)
+      protocolo = '💬 WEBSOCKET';
+      if (chatForm) {
+        chatForm.classList.remove('hidden');
+        const msgInput = document.querySelector('#chat-mensagem');
+        if (msgInput) msgInput.value = rawValue;
+      }
     }
 
+    if (protocolDisplay) protocolDisplay.textContent = protocolo;
 
-
-    // Monta o objeto (Payload) que será transportado
-    dadosRetorno = {
-      tipo: 'email',
-      remetente: NOME_USUARIO,
-      destinatario: textoEntrada,
-      assunto: infoEmail?.assunto || 'Sem assunto',
-      corpo: infoEmail?.corpo || 'Sem corpo',
-      protocolo: 'SMTP/POP', // Protocolos padrão para envio e recebimento de e-mails
-      timestamp: marcaTempo
-    };
-
-
-
-  } else if (textoEntrada.includes('www') && textoEntrada.includes('.com')) {
-
-    // --- CENÁRIO 2: PÁGINA WEB (HTTP) ---
-    // Condição: O texto de entrada tem 'www' E '.com', indicando uma URL válida.
-    
-    dadosRetorno = {
-      tipo: 'http_request',
-      metodo: 'GET', // Define o método padrão de busca web
-      hostIP: textoEntrada, // O destino da URL
-      protocolo: 'HTTP/HTTPS', // Protocolos usados em acesso web
-      usuario: NOME_USUARIO,
-      timestamp: marcaTempo
-    };
-
-
-
-  } else if (entradaArquivo && entradaArquivo.files && entradaArquivo.files.length > 0) {
-
-    // --- CENÁRIO 3: TRANSFERÊNCIA DE DOCUMENTO (ARQUIVO) ---
-    // Condição: Identificamos que o usuário anexou um arquivo físico no campo de file.
-    
-    // Acessamos o primeiro arquivo que foi incluído no input
-    const arquivoSelecionado = entradaArquivo.files[0];
-
-    dadosRetorno = {
-      nomeArquivo: arquivoSelecionado.name, // Coleta o nome original do arquivo
-      // Identifica o formato a partir da propriedade type ou pela extensão da string do nome
-      formato: arquivoSelecionado.type || arquivoSelecionado.name.split('.').pop(),
-      remetente: NOME_USUARIO,
-      protocolo: 'FTP/HTTP', // Protocolos relacionados a transferência e upload de arquivos
-      timestamp: marcaTempo
-    };
-
-
-
-  } else if (textoEntrada.trim() !== '') {
-
-    // --- CENÁRIO 4: BATE-PAPO (WEBSOCKET / CHAT) ---
-    // Condição: O campo não está vazio e não se enquadrou em nenhum formato específico de URL ou e-mail.
-    
-    dadosRetorno = {
-      tipo: 'chat',
-      usuario: NOME_USUARIO,
-      mensagem: textoEntrada,
-      protocolo: 'WEBSOCKET', // Utilizado amplamente para trocas de mensagens instantâneas
-      timestamp: marcaTempo
-    };
-
-
-
-  } else {
-
-    // Caso o usuário aperte o botão de enviar sem preencher nenhuma das informações.
-    alert('Por favor, insira um texto, URL, e-mail ou selecione um arquivo antes de enviar!');
-    return null; // Paralisa o processo para que dados inválidos não sigam nas camadas
-  }
-
-
-
-  // Entrega o payload (Carga Útil) totalmente estruturado para o próximo passo.
-  return dadosRetorno;
+    if (reqInput) {
+      reqInput.value = '';
+      if (btnEnviar) btnEnviar.classList.remove('active');
+    }
+  });
 }
 
+// ─── Envio: E-mail (SMTP) ─────────────────────────────────────────────────────
+if (emailForm) {
+  emailForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
+    const dadosEmail = {
+      tipo:         'E-mail (SMTP)',
+      remetente:    document.querySelector('#remetente')?.value || USER_NAME,
+      destinatario: document.querySelector('#destinatario')?.value || '',
+      assunto:      document.querySelector('#assunto')?.value || 'Sem assunto',
+      corpo:        document.querySelector('#corpo')?.value || '',
+      protocolo:    'SMTP/POP',
+      timestamp:    new Date().toLocaleTimeString(),
+    };
 
-/**
- * FUNÇÃO: estabelecerCamadaSessao
- * ---------------------------------------------------------
- * Representa a Camada de Sessão (Camada 5 do OSI).
- * Define de qual "porta lógica" sairemos e qual "porta lógica" do servidor atingiremos.
- * Ela cuida da manutenção e do status de conectividade dessa requisição.
- */
-export function estabelecerCamadaSessao(protocolo) {
-  
-  // Define a porta de destino padrão, ancorada no protocolo da Camada 7
-  let portaDestino = 80; // Default para web simples
-  if (protocolo === 'HTTP/HTTPS') portaDestino = 443; // Porta segura SSL/TLS web
-  if (protocolo === 'SMTP/POP') portaDestino = 587;   // Porta segura para serviços SMTP modernos
-  if (protocolo === 'FTP/HTTP') portaDestino = 21;    // Porta de controle padrão para FTP
-  if (protocolo === 'WEBSOCKET') portaDestino = 8080; // Porta alternativa comum para WebSockets
+    console.log('=== 1. CAMADA DE APLICAÇÃO (E-mail) ===');
+    console.log(dadosEmail);
+    await camadaApresentacao(dadosEmail);
+    emailForm.reset();
+    limparFormularios();
+  });
+}
 
-  // Porta de origem aleatória (efêmera): varia entre 49152 e 65535, conforme padrão IANA 
-  // O sistema operacional do cliente sempre escolhe uma porta temporária alta.
-  const portaOrigem = Math.floor(Math.random() * (65535 - 49152 + 1) + 49152);
-  
-  // Gera um ID de Sessão único para rastrear este diálogo (usando criptografia ou fallback simples)
-  const idSessao = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+// ─── Envio: Chat (WebSocket) ──────────────────────────────────────────────────
+if (chatForm) {
+  chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-  // Devolve as configurações vitais de conexão dessa Sessão
-  return {
-    idSessao: idSessao,
-    statusConexao: 'ESTABELECIDA', // Simula um handshake completado e conexão firmada
-    portaOrigem: portaOrigem,
-    portaDestino: portaDestino,
-    inicioSessao: new Date().toISOString()
-  };
+    const dadosChat = {
+      tipo:         'Mensagem de Chat',
+      usuario:      USER_NAME,
+      destinatario: document.querySelector('#chat-destinatario')?.value || '',
+      mensagem:     document.querySelector('#chat-mensagem')?.value || '',
+      protocolo:    'WEBSOCKET',
+      timestamp:    new Date().toLocaleTimeString(),
+    };
+
+    console.log('=== 1. CAMADA DE APLICAÇÃO (Chat) ===');
+    console.log(dadosChat);
+    await camadaApresentacao(dadosChat);
+    chatForm.reset();
+    limparFormularios();
+  });
+}
+
+// ─── Envio: Upload de Arquivo (FTP/HTTP) ──────────────────────────────────────
+if (inputFile) {
+  inputFile.addEventListener('change', async () => {
+    if (inputFile.files.length > 0) {
+      const file   = inputFile.files[0];
+      const partes = file.name.split('.');
+      const formato = partes.length > 1 ? partes.pop() : 'desconhecido';
+
+      const dadosArquivo = {
+        tipo:        'Upload de Arquivo',
+        nomeArquivo: file.name,
+        formato,
+        remetente:   USER_NAME,
+        protocolo:   'FTP/HTTP',
+        timestamp:   new Date().toLocaleTimeString(),
+      };
+
+      if (protocolDisplay) protocolDisplay.textContent = '📁 FTP / HTTP';
+
+      console.log('=== 1. CAMADA DE APLICAÇÃO (Arquivo) ===');
+      console.log(dadosArquivo);
+      await camadaApresentacao(dadosArquivo);
+    }
+  });
+}
+
+// ─── Envio: Requisição Web (HTTP/HTTPS) ───────────────────────────────────────
+if (siteForm) {
+  siteForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const dadosSite = {
+      tipo:      'Requisição Web (HTTP)',
+      metodo:    document.querySelector('#site-metodo')?.value || 'GET',
+      host:      document.querySelector('#site-host')?.value || '',
+      usuario:   USER_NAME,
+      protocolo: 'HTTP/HTTPS',
+      timestamp: new Date().toLocaleTimeString(),
+    };
+
+    console.log('=== 1. CAMADA DE APLICAÇÃO (Web) ===');
+    console.log(dadosSite);
+    await camadaApresentacao(dadosSite);
+    siteForm.reset();
+    limparFormularios();
+  });
 }

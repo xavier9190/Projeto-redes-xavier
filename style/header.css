@@ -1,23 +1,98 @@
+/* ============================================================
+   HEADER.CSS — Cabeçalho no estilo flat do João
+   Cor primária: verde-esmeralda #00c896
+   ============================================================ */
+
 .head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ff5722;
-  padding: 2.5rem;
+  background-color: var(--primary);
+  padding: 1.25rem 2rem;
 }
 
+/* Imagem circular do OSI */
 .osi-img {
-  width: 7.5rem;
-  height: 7.5rem;
-  border-radius: 3.75rem;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 2.5rem;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.3);
 }
 
+/* Título central */
 .title {
-  color: #FFF;
-  font-size: 3.5rem;
+  color: #fff;
+  font-size: 2rem;
+  font-family: 'Audiowide', cursive;
+  letter-spacing: 1px;
+  text-align: center;
 }
 
+/* Nome do usuário */
 .user {
-  color: #FFF;
-  font-size: 1.2rem;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Header direito (LED + botão logout) */
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+/* Usuário com ícone */
+.user-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-wrapper .icon {
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+/* LED de status */
+.status-led {
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+
+
+
+/* Botão trocar usuário */
+.logout-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.5);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.28);
+}
+
+@media (max-width: 640px) {
+  .title { font-size: 1.2rem; }
+  .osi-img { width: 3.5rem; height: 3.5rem; }
 }
